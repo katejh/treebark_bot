@@ -106,7 +106,7 @@ def run_command_coords(cursor, world, guild_id, search_tag=None):
         
         # TODO refactor to use join command
         if coord["guild_id"] == guild_id:
-            reply += "World name: {}\nName: {}\nCoordinates: {} {} {}\nDescription: {}\n\n".format(coord["world"], coord["tag"], coord["x_coord"], coord["y_coord"], coord["z_coord"], coord["description"])
+            reply += "World name: {}\nName: {}\nCoordinates: {} {} {}\nDescription: {}\n\n".format(coord["world"], coord["tag"], coord["x"], coord["y"], coord["z"], coord["description"])
 
         coord = cursor.fetchone()
     
