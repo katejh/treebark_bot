@@ -130,9 +130,9 @@ def run_command_record(cursor, guild_id, world, tag, x, y, z, description=None):
                     guild_id, 
                     world, 
                     tag, 
-                    x_coord, 
-                    y_coord, 
-                    z_coord, 
+                    x, 
+                    y, 
+                    z, 
                     description
                 )
             VALUES(
@@ -160,9 +160,9 @@ def run_command_record(cursor, guild_id, world, tag, x, y, z, description=None):
                     guild_id, 
                     world, 
                     tag, 
-                    x_coord, 
-                    y_coord, 
-                    z_coord 
+                    x, 
+                    y, 
+                    z 
                 )
             VALUES (
                 %(guild_id)s,
