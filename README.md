@@ -21,12 +21,12 @@ Then in session do SQL commands and stuff
 ## Usage
 
 Commands
-- [ ] `treebark` or `treebark help` - lists available commands
-- [x] `treebark coords <world_name> <coords_tag (optional)>` - gets saved coordinates of world. world_name must not have any spaces, coords_tag should not have spaces either.
-- [x] `treebark record <world_name> <coords_tag> <x> <y> <z> <description (optional)>` - records new coordinates
-- [ ] `treebark update <world_name> <coords_tag> <description>` updates description of coords
-- [ ] `treebark delete <world_name> <coords_tag>` - deletes coordinates
-- [ ] `treebark worlds` - lists available worlds and saved coords associated with each
+- [ ] `/tb` or `/tb` - lists available commands
+- [x] `/tb coords <world_name> <coords_tag (optional)>` - gets saved coordinates of world. world_name must not have any spaces, coords_tag should not have spaces either.
+- [x] `/tb record <world_name> <coords_tag> <x> <y> <z> <description (optional)>` - records new coordinates
+- [ ] `/tb update <world_name> <coords_tag> <description>` updates description of coords
+- [ ] `/tb delete <world_name> <coords_tag>` - deletes coordinates
+- [ ] `/tb worlds` - lists available worlds and saved coords associated with each
 
 ## TODOs
 
