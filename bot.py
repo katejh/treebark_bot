@@ -16,7 +16,7 @@ cursor = None
 COMMAND_PREFIX = "/tb"
 COMMANDS_DICT = {
     "coords": f"`{COMMAND_PREFIX} coords <world_name> <coords_tag (optional)>`",
-    "record": f"`{COMMAND_PREFIX} record <world_name> <coords_tag> <x> <y> <z> <description (optional)`"
+    "record": f"`{COMMAND_PREFIX} record <world_name> <coords_tag> <x> <y> <z> <description (optional)>`"
 }
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX + " ")
@@ -49,11 +49,14 @@ async def on_ready():
 
 @bot.listen("on_message")
 async def sendCommandsList(message):
-    commands_list_str = "Available commands:\n"
-    commands_list_str += "\n".join(COMMANDS_DICT.values())
     if message.content.startswith(COMMAND_PREFIX) and len(message.content.split()) <= 1:
         reply = "Hello! I help save useful Minecraft coordinates! I am a work in progress, so some things may not be so smooth, and I will also have more features in the future!\n" \
-                + commands_list_str
+                + "`<param>` indicates a no-whitespace keyword.\n" \
+                + "`[param]` indicates that the parameter can be comprised of several words (includes whitespace).\n" \
+                + "`(optional)` indicates that the parameter is optional.\n" \
+                + "If you really must have a `<param>` have whitespace, put it in quotes, although this is not recommended.\n"\
+                + "**Available commands**\n" \
+                + "\n".join(COMMANDS_DICT.values())
         await message.channel.send(reply)
 
 
