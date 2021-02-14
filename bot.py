@@ -16,7 +16,7 @@ cursor = None
 COMMAND_PREFIX = "/tb"
 COMMANDS_DICT = {
     "coords": f"`{COMMAND_PREFIX} coords <world_name> <coords_tag (optional)>`",
-    "record": f"`{COMMAND_PREFIX} record <world_name> <coords_tag> <x> <y> <z>`"
+    "record": f"`{COMMAND_PREFIX} record <world_name> <coords_tag> <x> <y> <z> <description (optional)`"
 }
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX + " ")
@@ -57,7 +57,7 @@ async def sendCommandsList(message):
         await message.channel.send(reply)
 
 
-@bot.command()
+@bot.command(brief="Get previously saved coordinates for your world", description="Invoke this command by typing " + COMMANDS_DICT["coords"])
 @commands.before_invoke(connect_db)
 @commands.after_invoke(disconnect_db)
 async def coords(ctx, world, search_tag=None):
@@ -104,10 +104,10 @@ async def coords(ctx, world, search_tag=None):
     await ctx.send(reply)
 
 
-@bot.command()
+@bot.command(brief="Save a new set of coordinates for later use", description="Invoke this command by typing " + COMMANDS_DICT["record"])
 @commands.before_invoke(connect_db)
 @commands.after_invoke(disconnect_db)
-async def record(ctx, world, tag, x, y, z, description=None):
+async def record(ctx, world, tag, x, y, z, *, description=None):
     try:
         x = int(x)
         y = int(y)
@@ -158,4 +158,9 @@ async def record_error(ctx, error):
         await ctx.send("Looks like your command was typed incorrectly! Your command should look like " + COMMANDS_DICT["record"] + ". Make sure there are no spaces in your world name or coordinates tag, and that coordinates are integers!")
 
 
-bot.run(TOKEN)
+def main():
+    bot.run(TOKEN)
+
+
+if __name__ == "__main__":
+    main()
