@@ -56,7 +56,7 @@ async def sendCommandsList(message):
                 + "`[param]` indicates that the parameter can be comprised of several words (includes whitespace).\n" \
                 + "`(optional)` indicates that the parameter is optional.\n" \
                 + "If you really must have a `<param>` have whitespace, put it in quotes, although this is not recommended.\n"\
-                + "**Available commands**\n" \
+                + "__Available commands__\n" \
                 + "\n".join(COMMANDS_DICT.values())
         await message.channel.send(reply)
 
@@ -98,7 +98,7 @@ async def coords(ctx, world, search_tag=None):
         
         # TODO refactor to use join command
         if coord["guild_id"] == ctx.guild.id:
-            reply += "World name: {}\nName: {}\nCoordinates: {} {} {}\nDescription: {}\n\n".format(coord["world"], coord["tag"], coord["x"], coord["y"], coord["z"], coord["description"])
+            reply += "**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(coord["world"], coord["tag"], coord["world"] + ":" + coord["tag"], coord["x"], coord["y"], coord["z"], coord["description"])
 
         coord = cursor.fetchone()
     
@@ -151,7 +151,7 @@ async def add(ctx, world, tag, x, y, z, *, description=None):
     })
 
     new_coords = cursor.fetchone()
-    reply = "Recorded coordinates:\nWorld name: {}\nName: {}\nCoordinates: {} {} {}\nDescription: {}\n\n".format(new_coords["world"], new_coords["tag"], new_coords["x"], new_coords["y"], new_coords["z"], new_coords["description"])
+    reply = "__Recorded coordinates__\n**World name**\t`{}`\n**Tag**\t`{}`**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(new_coords["world"], new_coords["tag"], new_coords["world"] + ":" + new_coords["tag"], new_coords["x"], new_coords["y"], new_coords["z"], new_coords["description"])
     print(reply)
     await ctx.send(reply)
 
@@ -192,7 +192,7 @@ async def editc(ctx, world, tag, param, value):
     reply = ""
 
     if coord is None:
-        reply = "Coordinates with world " + world + " and tag " + tag + " not found!"
+        reply = "Coordinates with name `" + world + ":" + tag + "` not found!"
     else:
         prev_value = coord[param]
         cursor.execute("""
