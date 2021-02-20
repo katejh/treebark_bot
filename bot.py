@@ -15,9 +15,10 @@ cursor = None
 
 COMMAND_PREFIX = "/tb"
 COMMANDS_DICT = {
-    "coords": f"`{COMMAND_PREFIX} coords <world_name> <coords_tag (optional)>`",
-    "add": f"`{COMMAND_PREFIX} record <world_name> <coords_tag> <x> <y> <z> <description (optional)>`",
-    "editc": f"`{COMMAND_PREFIX} editc <world_name> <coords_tag> x/y/z <value>`"
+    "coords": f"`{COMMAND_PREFIX} coords <world_name> <tag (optional)>`",
+    "add": f"`{COMMAND_PREFIX} record <world_name> <tag> <x> <y> <z> [description (optional)]`",
+    "editc": f"`{COMMAND_PREFIX} editc <world_name> <tag> x/y/z <value>`",
+    "editdesc": f"`{COMMAND_PREFIX} editdesc <world_name> <tag> [description]`"
 }
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX + " ")
@@ -98,7 +99,7 @@ async def coords(ctx, world, search_tag=None):
         
         # TODO refactor to use join command
         if coord["guild_id"] == ctx.guild.id:
-            reply += "**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(coord["world"], coord["tag"], coord["world"] + ":" + coord["tag"], coord["x"], coord["y"], coord["z"], coord["description"])
+            reply += "**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t```{}```\n\n".format(coord["world"], coord["tag"], coord["world"] + ":" + coord["tag"], coord["x"], coord["y"], coord["z"], coord["description"])
 
         coord = cursor.fetchone()
     
@@ -151,7 +152,7 @@ async def add(ctx, world, tag, x, y, z, *, description=None):
     })
 
     new_coords = cursor.fetchone()
-    reply = "__Recorded coordinates__\n**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(new_coords["world"], new_coords["tag"], new_coords["world"] + ":" + new_coords["tag"], new_coords["x"], new_coords["y"], new_coords["z"], new_coords["description"])
+    reply = "__Recorded coordinates__\n**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t```{}```\n\n".format(new_coords["world"], new_coords["tag"], new_coords["world"] + ":" + new_coords["tag"], new_coords["x"], new_coords["y"], new_coords["z"], new_coords["description"])
     print(reply)
     await ctx.send(reply)
 
@@ -223,6 +224,59 @@ async def editc(ctx, world, tag, param, value):
 async def editc_error(ctx, error):
     if isinstance(error, commands.UserInputError):
         await ctx.send(f"Looks like your command was typed incorrectly! The command is {COMMANDS_DICT['editc']}.\nExample: `{COMMAND_PREFIX} editc myworld mytag x 10`")
+
+
+@bot.command(brief="Edit description", description="Invoke this command by typing " + COMMANDS_DICT["editdesc"])
+@commands.before_invoke(connect_db)
+@commands.after_invoke(disconnect_db)
+async def editdesc(ctx, world, tag, *, new_desc):
+    # the following code assumes no duplicate tags
+
+    # check the coordinates exists
+    cursor.execute("""
+        SELECT 
+            description
+        FROM
+            coords
+        WHERE
+            world = %(world)s
+            AND tag = %(tag)s
+            AND guild_id = %(guild_id)s
+    """, {
+        "world": world,
+        "tag": tag,
+        "guild_id": ctx.guild.id
+    })
+
+    coord = cursor.fetchone()
+    print(coord)
+    reply = ""
+
+    if coord is None:
+        reply = "Coordinates with name `" + world + ":" + tag + "` not found!"
+    else:
+        prev_value = coord["description"]
+        cursor.execute("""
+            UPDATE 
+                coords
+            SET
+                description = %(description)s
+            WHERE
+                world = %(world)s
+                AND tag = %(tag)s
+                AND guild_id = %(guild_id)s
+            RETURNING description
+        """, {
+            "description": new_desc,
+            "world": world,
+            "tag": tag,
+            "guild_id": ctx.guild.id
+        })
+
+        new_coord = cursor.fetchone()
+        reply = f"Changed `description` from ```{prev_value}``` to ```{new_coord['description']}``` for `{world}:{tag}`"
+
+    await ctx.send(reply)
 
 
 def main():
