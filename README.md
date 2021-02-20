@@ -21,7 +21,7 @@ Then in session do SQL commands and stuff
 ## Usage
 
 Commands
-- [ ] `/tb` or `/tb` - lists available commands
+- [ ] `/tb` or `/tb help` - lists available commands
 - [x] `/tb coords <world_name> <coords_tag (optional)>` - gets saved coordinates of world. world_name must not have any spaces, coords_tag should not have spaces either.
 - [x] `/tb record <world_name> <coords_tag> <x> <y> <z> <description (optional)>` - records new coordinates
 - [ ] `/tb update <world_name> <coords_tag> <description>` updates description of coords
