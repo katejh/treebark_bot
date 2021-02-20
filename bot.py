@@ -16,7 +16,8 @@ cursor = None
 COMMAND_PREFIX = "/tb"
 COMMANDS_DICT = {
     "coords": f"`{COMMAND_PREFIX} coords <world_name> <coords_tag (optional)>`",
-    "record": f"`{COMMAND_PREFIX} record <world_name> <coords_tag> <x> <y> <z> <description (optional)>`"
+    "add": f"`{COMMAND_PREFIX} record <world_name> <coords_tag> <x> <y> <z> <description (optional)>`",
+    "editc": f"`{COMMAND_PREFIX} editc <world_name> <coords_tag> x/y/z <value>`"
 }
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX + " ")
@@ -107,10 +108,10 @@ async def coords(ctx, world, search_tag=None):
     await ctx.send(reply)
 
 
-@bot.command(brief="Save a new set of coordinates for later use", description="Invoke this command by typing " + COMMANDS_DICT["record"])
+@bot.command(brief="Save a new set of coordinates for later use", description="Invoke this command by typing " + COMMANDS_DICT["add"])
 @commands.before_invoke(connect_db)
 @commands.after_invoke(disconnect_db)
-async def record(ctx, world, tag, x, y, z, *, description=None):
+async def add(ctx, world, tag, x, y, z, *, description=None):
     try:
         x = int(x)
         y = int(y)
@@ -155,10 +156,73 @@ async def record(ctx, world, tag, x, y, z, *, description=None):
     await ctx.send(reply)
 
 
-@record.error
-async def record_error(ctx, error):
+@add.error
+async def add_error(ctx, error):
     if isinstance(error, commands.UserInputError):
         await ctx.send("Looks like your command was typed incorrectly! Your command should look like " + COMMANDS_DICT["record"] + ". Make sure there are no spaces in your world name or coordinates tag, and that coordinates are integers!")
+
+
+@bot.command(brief="Edit the x, y, or z value", description="Invoke this command by typing " + COMMANDS_DICT["editc"])
+@commands.before_invoke(connect_db)
+@commands.after_invoke(disconnect_db)
+async def editc(ctx, world, tag, param, value):
+    if param not in ["x", "y", "z"]:
+        raise commands.BadArgument("Requested parameter to change is not of x, y, or z")
+
+    # the following code assumes no duplicate tags
+
+    # check the coordinates exists
+    cursor.execute("""
+        SELECT 
+            %(param)s
+        FROM
+            coords
+        WHERE
+            world = %(world)s
+            AND tag = %(tag)s
+            AND guild_id = %(guild_id)s
+    """, {
+        "param": param,
+        "world": world,
+        "tag": tag,
+        "guild_id": ctx.guild.id
+    })
+
+    coord = cursor.fetchone()
+    reply = ""
+
+    if coord is None:
+        reply = "Coordinates with world " + world + " and tag " + tag + " not found!"
+    else:
+        prev_value = coord[param]
+        cursor.execute("""
+            UPDATE 
+                coords
+            SET
+                %(param)s = %(value)s
+            WHERE
+                world = %(world)s
+                AND tag = %(tag)s
+                AND guild_id = %(guild_id)s
+            RETURNING %(param)s
+        """, {
+            "param": param,
+            "value": value,
+            "world": world,
+            "tag": tag,
+            "guild_id": ctx.guild.id
+        })
+
+        new_coord = cursor.fetchone()
+        reply = f"Changed `{param}` from `{prev_value}` to `{new_coord[param]}` for `{world}:{tag}`"
+
+    await ctx.send(reply)
+
+
+@editc.error
+async def editc_error(ctx, error):
+    if isinstance(error, commands.UserInputError):
+        await ctx.send("Looks like your command was typed incorrectly! The command is " + COMMANDS_DICT["editc"] + ".\nExample: `\\tb editc myworld mytag x 10`")
 
 
 def main():
