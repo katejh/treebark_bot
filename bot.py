@@ -98,7 +98,7 @@ async def coords(ctx, world, search_tag=None):
         
         # TODO refactor to use join command
         if coord["guild_id"] == ctx.guild.id:
-            reply += "**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(coord["world"], coord["tag"], coord["world"] + ":" + coord["tag"], coord["x"], coord["y"], coord["z"], coord["description"])
+            reply += "**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(coord["world"], coord["tag"], coord["world"] + ":" + coord["tag"], coord["x"], coord["y"], coord["z"], coord["description"])
 
         coord = cursor.fetchone()
     
@@ -151,7 +151,7 @@ async def add(ctx, world, tag, x, y, z, *, description=None):
     })
 
     new_coords = cursor.fetchone()
-    reply = "__Recorded coordinates__\n**World name**\t`{}`\n**Tag**\t`{}`**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(new_coords["world"], new_coords["tag"], new_coords["world"] + ":" + new_coords["tag"], new_coords["x"], new_coords["y"], new_coords["z"], new_coords["description"])
+    reply = "__Recorded coordinates__\n**World name**\t`{}`\n**Tag**\t`{}`\n**Name**\t`{}`\n**Coordinates**\t`{} {} {}`\n**Description**\t`{}`\n\n".format(new_coords["world"], new_coords["tag"], new_coords["world"] + ":" + new_coords["tag"], new_coords["x"], new_coords["y"], new_coords["z"], new_coords["description"])
     print(reply)
     await ctx.send(reply)
 
@@ -174,21 +174,22 @@ async def editc(ctx, world, tag, param, value):
     # check the coordinates exists
     cursor.execute("""
         SELECT 
-            %(param)s
+            {}
         FROM
             coords
         WHERE
             world = %(world)s
             AND tag = %(tag)s
             AND guild_id = %(guild_id)s
-    """, {
-        "param": param,
+    """.format(param), {
         "world": world,
         "tag": tag,
         "guild_id": ctx.guild.id
     })
+    # i am sorry for this ugly ass code where I simultaneously format the query string and pass in sql params but it was the only way to pass columns as parameters
 
     coord = cursor.fetchone()
+    print(coord)
     reply = ""
 
     if coord is None:
@@ -199,14 +200,13 @@ async def editc(ctx, world, tag, param, value):
             UPDATE 
                 coords
             SET
-                %(param)s = %(value)s
+                {} = %(value)s
             WHERE
                 world = %(world)s
                 AND tag = %(tag)s
                 AND guild_id = %(guild_id)s
-            RETURNING %(param)s
-        """, {
-            "param": param,
+            RETURNING {}
+        """.format(param, param), {
             "value": value,
             "world": world,
             "tag": tag,
@@ -222,7 +222,7 @@ async def editc(ctx, world, tag, param, value):
 @editc.error
 async def editc_error(ctx, error):
     if isinstance(error, commands.UserInputError):
-        await ctx.send("Looks like your command was typed incorrectly! The command is " + COMMANDS_DICT["editc"] + ".\nExample: `\\tb editc myworld mytag x 10`")
+        await ctx.send(f"Looks like your command was typed incorrectly! The command is {COMMANDS_DICT['editc']}.\nExample: `{COMMAND_PREFIX} editc myworld mytag x 10`")
 
 
 def main():
