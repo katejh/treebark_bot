@@ -22,10 +22,11 @@ Then in session do SQL commands and stuff
 
 Commands
 - [ ] `/tb` or `/tb help` - lists available commands
-- [x] `/tb coords <world_name> <coords_tag (optional)>` - gets saved coordinates of world. world_name must not have any spaces, coords_tag should not have spaces either.
-- [x] `/tb record <world_name> <coords_tag> <x> <y> <z> <description (optional)>` - records new coordinates
-- [ ] `/tb update <world_name> <coords_tag> <description>` updates description of coords
-- [ ] `/tb delete <world_name> <coords_tag>` - deletes coordinates
+- [x] `/tb get <world_name> <tag (optional)>` - gets saved coordinates of world. world_name must not have any spaces, coords_tag should not have spaces either.
+- [x] `/tb add <world_name> <tag> <x> <y> <z> [description (optional)]` - records new coordinates
+- [x] `/tb edit <world_name> <tag> x/y/z <value>` - edits coordinate values
+- [x] `/tb editdesc <world_name> <tag> [description]` - rewrites description
+- [ ] `/tb delete <world_name> <tag>` - deletes coordinates
 - [ ] `/tb worlds` - lists available worlds and saved coords associated with each
 
 ## TODOs
