@@ -15,7 +15,7 @@ cursor = None
 
 COMMAND_PREFIX = "/tb"
 COMMANDS_DICT = {
-    "coords": f"`{COMMAND_PREFIX} coords <world_name> <tag (optional)>`",
+    "get": f"`{COMMAND_PREFIX} get <world_name> <tag (optional)>`",
     "add": f"`{COMMAND_PREFIX} record <world_name> <tag> <x> <y> <z> [description (optional)]`",
     "edit": f"`{COMMAND_PREFIX} edit <world_name> <tag> x/y/z/world/tag <value>`",
     "editdesc": f"`{COMMAND_PREFIX} editdesc <world_name> <tag> [description]`"
@@ -62,10 +62,10 @@ async def sendCommandsList(message):
         await message.channel.send(reply)
 
 
-@bot.command(brief="Get previously saved coordinates for your world", description="Invoke this command by typing " + COMMANDS_DICT["coords"])
+@bot.command(brief="Get previously saved coordinates for your world", description="Invoke this command by typing " + COMMANDS_DICT["get"])
 @commands.before_invoke(connect_db)
 @commands.after_invoke(disconnect_db)
-async def coords(ctx, world, search_tag=None):
+async def get(ctx, world, search_tag=None):
     if search_tag is None:
         cursor.execute("""
             SELECT 
@@ -187,7 +187,7 @@ async def edit(ctx, world, tag, param, value):
         "tag": tag,
         "guild_id": ctx.guild.id
     })
-    # i am sorry for this ugly ass code where I simultaneously format the query string and pass in sql params but it was the only way to pass columns as parameters
+    # i am sorry for this ugly ass code where I simultaneously format the query string and pass in sql params but it was the easiest way to pass columns as parameters
 
     coord = cursor.fetchone()
     reply = ""
@@ -195,7 +195,6 @@ async def edit(ctx, world, tag, param, value):
     if coord is None:
         reply = "Coordinates with name `" + world + ":" + tag + "` not found!"
     else:
-        prev_value = coord[param]
         cursor.execute("""
             UPDATE 
                 coords
@@ -214,7 +213,7 @@ async def edit(ctx, world, tag, param, value):
         })
 
         new_coord = cursor.fetchone()
-        reply = f"Changed `{param}` from `{prev_value}` to `{new_coord[param]}` for `{new_coord['world']}:{new_coord['tag']}`"
+        reply = f"Changed `{param}` from `{coord[param]}` to `{new_coord[param]}` for `{new_coord['world']}:{new_coord['tag']}`"
 
     await ctx.send(reply)
 
@@ -248,13 +247,11 @@ async def editdesc(ctx, world, tag, *, new_desc):
     })
 
     coord = cursor.fetchone()
-    print(coord)
     reply = ""
 
     if coord is None:
         reply = "Coordinates with name `" + world + ":" + tag + "` not found!"
     else:
-        prev_value = coord["description"]
         cursor.execute("""
             UPDATE 
                 coords
@@ -273,7 +270,7 @@ async def editdesc(ctx, world, tag, *, new_desc):
         })
 
         new_coord = cursor.fetchone()
-        reply = f"Changed `description` from ```{prev_value}``` to ```{new_coord['description']}``` for `{world}:{tag}`"
+        reply = f"Changed `description` from ```{coord['description']}``` to ```{new_coord['description']}``` for `{world}:{tag}`"
 
     await ctx.send(reply)
 
