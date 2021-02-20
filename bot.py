@@ -16,7 +16,7 @@ cursor = None
 COMMAND_PREFIX = "/tb"
 COMMANDS_DICT = {
     "get": f"`{COMMAND_PREFIX} get <world_name> <tag (optional)>`",
-    "add": f"`{COMMAND_PREFIX} record <world_name> <tag> <x> <y> <z> [description (optional)]`",
+    "add": f"`{COMMAND_PREFIX} add <world_name> <tag> <x> <y> <z> [description (optional)]`",
     "edit": f"`{COMMAND_PREFIX} edit <world_name> <tag> x/y/z/world/tag <value>`",
     "editdesc": f"`{COMMAND_PREFIX} editdesc <world_name> <tag> [description]`"
 }
