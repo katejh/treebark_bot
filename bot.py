@@ -17,7 +17,7 @@ COMMAND_PREFIX = "/tb"
 COMMANDS_DICT = {
     "coords": f"`{COMMAND_PREFIX} coords <world_name> <tag (optional)>`",
     "add": f"`{COMMAND_PREFIX} record <world_name> <tag> <x> <y> <z> [description (optional)]`",
-    "editc": f"`{COMMAND_PREFIX} editc <world_name> <tag> x/y/z <value>`",
+    "edit": f"`{COMMAND_PREFIX} edit <world_name> <tag> x/y/z/world/tag <value>`",
     "editdesc": f"`{COMMAND_PREFIX} editdesc <world_name> <tag> [description]`"
 }
 
@@ -140,7 +140,7 @@ async def add(ctx, world, tag, x, y, z, *, description=None):
             %(z)s,
             %(description)s
         )
-        RETURNING world, tag, x, y, z, description
+        RETURNING *
     """, {
         "guild_id": ctx.guild.id,
         "world": world,
@@ -163,12 +163,12 @@ async def add_error(ctx, error):
         await ctx.send("Looks like your command was typed incorrectly! Your command should look like " + COMMANDS_DICT["record"] + ". Make sure there are no spaces in your world name or coordinates tag, and that coordinates are integers!")
 
 
-@bot.command(brief="Edit the x, y, or z value", description="Invoke this command by typing " + COMMANDS_DICT["editc"])
+@bot.command(brief="Edit the x, y, or z value, or world/tag name", description="Invoke this command by typing " + COMMANDS_DICT["edit"])
 @commands.before_invoke(connect_db)
 @commands.after_invoke(disconnect_db)
-async def editc(ctx, world, tag, param, value):
-    if param not in ["x", "y", "z"]:
-        raise commands.BadArgument("Requested parameter to change is not of x, y, or z")
+async def edit(ctx, world, tag, param, value):
+    if param not in ["x", "y", "z", "world", "tag"]:
+        raise commands.BadArgument("Requested parameter to change is not of x, y, z, world, or tag")
 
     # the following code assumes no duplicate tags
 
@@ -190,7 +190,6 @@ async def editc(ctx, world, tag, param, value):
     # i am sorry for this ugly ass code where I simultaneously format the query string and pass in sql params but it was the only way to pass columns as parameters
 
     coord = cursor.fetchone()
-    print(coord)
     reply = ""
 
     if coord is None:
@@ -206,8 +205,8 @@ async def editc(ctx, world, tag, param, value):
                 world = %(world)s
                 AND tag = %(tag)s
                 AND guild_id = %(guild_id)s
-            RETURNING {}
-        """.format(param, param), {
+            RETURNING *
+        """.format(param), {
             "value": value,
             "world": world,
             "tag": tag,
@@ -215,15 +214,15 @@ async def editc(ctx, world, tag, param, value):
         })
 
         new_coord = cursor.fetchone()
-        reply = f"Changed `{param}` from `{prev_value}` to `{new_coord[param]}` for `{world}:{tag}`"
+        reply = f"Changed `{param}` from `{prev_value}` to `{new_coord[param]}` for `{new_coord['world']}:{new_coord['tag']}`"
 
     await ctx.send(reply)
 
 
-@editc.error
-async def editc_error(ctx, error):
+@edit.error
+async def edit_error(ctx, error):
     if isinstance(error, commands.UserInputError):
-        await ctx.send(f"Looks like your command was typed incorrectly! The command is {COMMANDS_DICT['editc']}.\nExample: `{COMMAND_PREFIX} editc myworld mytag x 10`")
+        await ctx.send(f"Looks like your command was typed incorrectly! The command is {COMMANDS_DICT['edit']}.\nExample: `{COMMAND_PREFIX} edit myworld mytag x 10`")
 
 
 @bot.command(brief="Edit description", description="Invoke this command by typing " + COMMANDS_DICT["editdesc"])
